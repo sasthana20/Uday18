@@ -33,14 +33,17 @@ public without sharing class cemInsertEmailTemplateQueueable implements Queueabl
     
     public void execute(QueueableContext context) {
         List<Folder> folderName = [SELECT Id, Name, DeveloperName, Type FROM Folder where Type='Email' limit 1];
-        try{
-        Id folderId=folderName[0].id;
+        if(folderName.size()>0){
+            try{
+                Id folderId=folderName[0].id;
+            }
+            catch(ListException e){
+                System.debug('List exception fired'); 
+            }
+            String folName = folderName[0].Name;
+            String Type = folderName[0].Type; 
         }
-        catch(ListException e){
-            System.debug('List exception fired'); 
-        }
-        String folName = folderName[0].Name;
-        String Type = folderName[0].Type;
+        
         system.debug('userId'+userId);
         
         EmailTemplate toInsertEmailTemplate = new EmailTemplate();
@@ -48,31 +51,31 @@ public without sharing class cemInsertEmailTemplateQueueable implements Queueabl
         if(emailTemplateList.size()>0){
             toInsertEmailTemplate=emailTemplateList[0];
             if(toInsertEmailTemplate.UiType == 'Aloha'){
-               toInsertEmailTemplate.Body = emailBody; 
+                toInsertEmailTemplate.Body = emailBody; 
             }else{
-               toInsertEmailTemplate.HtmlValue = emailBody; 
+                toInsertEmailTemplate.HtmlValue = emailBody; 
             }
             
             toInsertEmailTemplate.Subject = subject;                      
             update toInsertEmailTemplate;
         }
         /*
-        else{
-            toInsertEmailTemplate.Name = 'Test Email Template 1';
-            toInsertEmailTemplate.Body = emailBody;
-            toInsertEmailTemplate.Subject = subject;
-            toInsertEmailTemplate.DeveloperName = 'a'+userId;
-            toInsertEmailTemplate.FolderId=folderId;
-            toInsertEmailTemplate.TemplateType = 'text';
-            toInsertEmailTemplate.IsActive = true;
-            system.debug('toInsertEmailTemplate'+toInsertEmailTemplate.Subject);
-            insert toInsertEmailTemplate;
-        }
-		*/
+else{
+toInsertEmailTemplate.Name = 'Test Email Template 1';
+toInsertEmailTemplate.Body = emailBody;
+toInsertEmailTemplate.Subject = subject;
+toInsertEmailTemplate.DeveloperName = 'a'+userId;
+toInsertEmailTemplate.FolderId=folderId;
+toInsertEmailTemplate.TemplateType = 'text';
+toInsertEmailTemplate.IsActive = true;
+system.debug('toInsertEmailTemplate'+toInsertEmailTemplate.Subject);
+insert toInsertEmailTemplate;
+}
+*/
         insertedTemplateID=toInsertEmailTemplate.Id;
         system.debug('insertedTemplateid'+toInsertEmailTemplate.id);
         if(!Test.isRunningTest()){
-        System.enqueueJob(new cemSendEmailQueueable(userId, relatedTo, fromAddress, fromName, subject, emailBody, toIds, toAddress,  ccIds,  ccAddress,  classification,  deliveryOption, insertedTemplateID, attachmentID));
+            System.enqueueJob(new cemSendEmailQueueable(userId, relatedTo, fromAddress, fromName, subject, emailBody, toIds, toAddress,  ccIds,  ccAddress,  classification,  deliveryOption, insertedTemplateID, attachmentID));
         }
     }    
 }
