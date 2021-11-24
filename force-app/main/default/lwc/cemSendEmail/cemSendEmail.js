@@ -438,7 +438,6 @@ export default class CemSendEmail extends LightningElement {
     handleShowPreview(event) {
         console.log('***** handleAddTemplateClicked: ' + event);
         this.onSelectEmailTemplate();
-        this.showPreviewEmail = true;
     }
 
     handleAddAttachment(event) {
@@ -537,6 +536,7 @@ export default class CemSendEmail extends LightningElement {
             .then((results) => {
                 this.previewEmailBody = results[1];
                 this.previewEmailSubject = results[0];
+                this.showPreviewEmail = true;
             })
             .catch((error) => {
                 console.error('Lookup error', JSON.stringify(error));
